@@ -16,4 +16,3 @@ export const defaultContent: SiteContent = {
   cta: "Let’s build what’s next",
 };
 
-export const contentKey = "mok-site-content-v1";

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { contentKey, defaultContent, type SiteContent } from "./content";
+import { defaultContent, type SiteContent } from "./content";
+import { getSupabase } from "@/lib/supabase";
 
 function Arrow({ diagonal = false }: { diagonal?: boolean }) {
   return <span aria-hidden="true" className="arrow">{diagonal ? "↗" : "→"}</span>;
@@ -11,8 +12,13 @@ function Arrow({ diagonal = false }: { diagonal?: boolean }) {
 export default function Home() {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   useEffect(() => {
-    const saved = localStorage.getItem(contentKey);
-    if (saved) try { setContent({ ...defaultContent, ...JSON.parse(saved) }); } catch { /* Keep defaults if saved data is invalid. */ }
+    const supabase = getSupabase();
+    if (!supabase) return;
+    let active = true;
+    void supabase.from("site_content").select("content").eq("id", "primary").single().then(({ data }) => {
+      if (active && data?.content) setContent({ ...defaultContent, ...(data.content as Partial<SiteContent>) });
+    });
+    return () => { active = false; };
   }, []);
 
   return <main>
